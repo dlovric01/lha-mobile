@@ -42,6 +42,23 @@ class ApiService {
     }
   }
 
+  Future<List<dynamic>> getThreeHourForecast() async {
+    try {
+      final response = await _dio.get(
+        'https://api.openweathermap.org/data/2.5/forecast',
+        queryParameters: {
+          'q': 'Donja Bistra,HR',
+          'units': 'metric',
+          'lang': 'hr',
+          'appid': _weatherApiKey,
+        },
+      );
+      return response.data['list'] as List<dynamic>;
+    } catch (e) {
+      throw 'Greška pri dohvaćanju detaljne prognoze: $e';
+    }
+  }
+
   Future<List<DailyWeather>> getDailyForecast() async {
     try {
       final response = await _dio.get(
