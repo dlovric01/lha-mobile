@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'home_page.dart' show LHAEnum;
 
 class ControlSection extends StatelessWidget {
@@ -32,14 +33,14 @@ class ControlSection extends StatelessWidget {
                 child: _ControlButton(
                   label: 'Lijeva garaža',
                   icon: Icons.garage,
-                  onTap: () => onToggle(LHAEnum.garageLeft),
+                  onTap: () async => onToggle(LHAEnum.garageLeft),
                 ),
               ),
               Expanded(
                 child: _ControlButton(
                   label: 'Desna garaža',
                   icon: Icons.garage,
-                  onTap: () => onToggle(LHAEnum.garageRight),
+                  onTap: () async => onToggle(LHAEnum.garageRight),
                 ),
               ),
             ],
@@ -48,7 +49,7 @@ class ControlSection extends StatelessWidget {
             label: 'Kapija',
             icon: Icons.table_rows,
             fullWidth: true,
-            onTap: () => onToggle(LHAEnum.slidingGate),
+            onTap: () async => onToggle(LHAEnum.slidingGate),
           ),
         ],
       ),
@@ -56,10 +57,10 @@ class ControlSection extends StatelessWidget {
   }
 }
 
-class _ControlButton extends StatelessWidget {
+class _ControlButton extends StatefulWidget {
   final String label;
   final IconData icon;
-  final VoidCallback onTap;
+  final Future<void> Function() onTap;
   final bool fullWidth;
 
   const _ControlButton({
@@ -70,6 +71,12 @@ class _ControlButton extends StatelessWidget {
   });
 
   @override
+  State<_ControlButton> createState() => _ControlButtonState();
+}
+
+class _ControlButtonState extends State<_ControlButton> {
+  bool isLoading = false;
+  @override
   Widget build(BuildContext context) {
     final card = Card(
       elevation: 2,
@@ -77,19 +84,35 @@ class _ControlButton extends StatelessWidget {
       color: Colors.white.withOpacity(0.1), // Tamna s nijansom plave
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
-        onTap: onTap,
+        onTap:
+            isLoading == false
+                ? () {
+                  setState(() {
+                    isLoading = true;
+                  });
+                  widget.onTap().then((value) {
+                    setState(() {
+                      isLoading = false;
+                    });
+                  });
+                }
+                : null,
         borderRadius: BorderRadius.circular(12),
-        child: Padding(
+        child: Container(
           padding: const EdgeInsets.symmetric(vertical: 20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: Colors.white60, size: 28),
+              Icon(
+                widget.icon,
+                color: isLoading ? Colors.yellow : Colors.white60,
+                size: 28,
+              ),
               const SizedBox(height: 8),
               Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white,
+                widget.label,
+                style: TextStyle(
+                  color: isLoading ? Colors.yellow : Colors.white,
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
                 ),
@@ -100,6 +123,8 @@ class _ControlButton extends StatelessWidget {
       ),
     );
 
-    return fullWidth ? SizedBox(width: double.infinity, child: card) : card;
+    return widget.fullWidth
+        ? SizedBox(width: double.infinity, child: card)
+        : card;
   }
 }

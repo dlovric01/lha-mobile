@@ -23,6 +23,9 @@ class ApiService {
 
   Future<Response> toggleGarage(String garage) async {
     try {
+      await Future.delayed(
+        Duration(milliseconds: 500),
+      ); // added for button spamming
       return await _dio.post('/garage/$garage');
     } on DioException catch (e) {
       throw _handleDioError(e);
@@ -30,6 +33,10 @@ class ApiService {
   }
 
   Future<Response> toggleSlidingGate() async {
+    await Future.delayed(
+      Duration(milliseconds: 500),
+    ); // added for button spamming
+
     throw 'Kapija još nije podržana. Dolazi uskoro 🚧';
   }
 

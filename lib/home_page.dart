@@ -71,26 +71,26 @@ class HomePageState extends State<HomePage> {
           ),
         ),
         Scaffold(
-          extendBodyBehindAppBar: true,
           backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            title: const Text(
+              'Lovrić Dom',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ),
           body: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(vertical: 70),
+            padding: EdgeInsets.only(bottom: 100),
             child: Column(
               spacing: 10,
               children: [
-                const Text(
-                  'Lovrić Home Assistant',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                _buildCurrentWeatherCard(),
-
-                _buildForecastList(),
-
                 ControlSection(onToggle: toggleItem),
+                _buildCurrentWeatherCard(),
+                _buildForecastList(),
               ],
             ),
           ),
@@ -202,90 +202,98 @@ class HomePageState extends State<HomePage> {
   }
 
   void _showThreeHourDetails(List<dynamic> details, DateTime date) {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (context) {
-      return DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.6,
-        minChildSize: 0.3,
-        maxChildSize: 0.9,
-        builder: (context, scrollController) {
-          return Container(
-            decoration: BoxDecoration(
-              color: Colors.grey[900], // Tamna pozadina kao u ostatku aplikacije
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-            ),
-            padding: EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    margin: EdgeInsets.only(bottom: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white30, // Suptilan indikator za povlačenje
-                      borderRadius: BorderRadius.circular(2),
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.6,
+          minChildSize: 0.3,
+          maxChildSize: 0.9,
+          builder: (context, scrollController) {
+            return Container(
+              decoration: BoxDecoration(
+                color:
+                    Colors.grey[900], // Tamna pozadina kao u ostatku aplikacije
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color:
+                            Colors.white30, // Suptilan indikator za povlačenje
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                   ),
-                ),
-                Text(
-                  'Detaljna prognoza za ${_formatShortDate(date)}',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                  Text(
+                    'Detaljna prognoza za ${_formatShortDate(date)}',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-                SizedBox(height: 12),
-                Expanded(
-                  child: ListView.builder(
-                    controller: scrollController,
-                    itemCount: details.length,
-                    itemBuilder: (context, index) {
-                      final entry = details[index];
-                      final dt = DateTime.fromMillisecondsSinceEpoch(entry['dt'] * 1000);
-                      final time = '${dt.hour.toString().padLeft(2, '0')}:00';
-                      final temp = entry['main']['temp'].toDouble();
-                      final desc = entry['weather'][0]['description'];
-                      final rain = entry['rain']?['3h']?.toDouble() ?? 0.0;
+                  SizedBox(height: 12),
+                  Expanded(
+                    child: ListView.builder(
+                      controller: scrollController,
+                      itemCount: details.length,
+                      itemBuilder: (context, index) {
+                        final entry = details[index];
+                        final dt = DateTime.fromMillisecondsSinceEpoch(
+                          entry['dt'] * 1000,
+                        );
+                        final time = '${dt.hour.toString().padLeft(2, '0')}:00';
+                        final temp = entry['main']['temp'].toDouble();
+                        final desc = entry['weather'][0]['description'];
+                        final rain = entry['rain']?['3h']?.toDouble() ?? 0.0;
 
-                      return Card(
-                        color: Colors.grey[800], // Tamna kartica koja se slaže s pozadinom
-                        margin: EdgeInsets.symmetric(vertical: 6),
-                        child: ListTile(
-                          title: Text(
-                            '$time - ${desc[0].toUpperCase()}${desc.substring(1)}',
-                            style: TextStyle(color: Colors.white),
+                        return Card(
+                          color:
+                              Colors
+                                  .grey[800], // Tamna kartica koja se slaže s pozadinom
+                          margin: EdgeInsets.symmetric(vertical: 6),
+                          child: ListTile(
+                            title: Text(
+                              '$time - ${desc[0].toUpperCase()}${desc.substring(1)}',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            subtitle: Text(
+                              'Temperatura: ${temp.toStringAsFixed(1)} °C',
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                            trailing:
+                                rain > 0
+                                    ? Text(
+                                      '🌧 ${rain.toStringAsFixed(1)} mm',
+                                      style: TextStyle(
+                                        color: Colors.lightBlueAccent,
+                                      ),
+                                    )
+                                    : null,
                           ),
-                          subtitle: Text(
-                            'Temperatura: ${temp.toStringAsFixed(1)} °C',
-                            style: TextStyle(color: Colors.white70),
-                          ),
-                          trailing: rain > 0
-                              ? Text(
-                                  '🌧 ${rain.toStringAsFixed(1)} mm',
-                                  style: TextStyle(color: Colors.lightBlueAccent),
-                                )
-                              : null,
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
-            ),
-          );
-        },
-      );
-    },
-  );
-}
-
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 
   List<dynamic> _filterThreeHourForDay(List<dynamic> list, DateTime day) {
     return list.where((entry) {
@@ -312,7 +320,7 @@ class HomePageState extends State<HomePage> {
             borderRadius: BorderRadius.circular(15),
           ),
           elevation: 4,
-          margin: EdgeInsets.all(10),
+          margin: EdgeInsets.symmetric(horizontal: 10),
           child: Padding(
             padding: const EdgeInsets.all(15),
 
@@ -334,10 +342,7 @@ class HomePageState extends State<HomePage> {
                     const SizedBox(width: 6),
                     Text(
                       '${weather.temperature?.celsius?.toStringAsFixed(1) ?? '-'} °C',
-                      style: const TextStyle(
-                        fontSize: 32,
-                        color: Colors.white,
-                      ),
+                      style: const TextStyle(fontSize: 32, color: Colors.white),
                     ),
                   ],
                 ),
