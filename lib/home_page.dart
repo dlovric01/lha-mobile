@@ -1,9 +1,10 @@
-// ignore_for_file: deprecated_member_use, use_build_context_synchronously
+// ignore_for_file: deprecated_member_use
 
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:lha_mobile/api_service.dart';
 import 'package:lha_mobile/control_section.dart';
+import 'package:lha_mobile/daily_weather.dart';
 import 'package:weather/weather.dart';
 
 enum LHAEnum {
@@ -25,7 +26,19 @@ class HomePage extends StatefulWidget {
 
 class HomePageState extends State<HomePage> {
   final ApiService apiService = ApiService();
-  String responseMessage = '';
+  late Future<Weather> _weatherFuture;
+  late Future<List<DailyWeather>> _forecastFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  void _loadData() {
+    _weatherFuture = apiService.getWeather();
+    _forecastFuture = apiService.getDailyForecast();
+  }
 
   Future<void> toggleItem(LHAEnum item) async {
     try {
@@ -42,156 +55,245 @@ class HomePageState extends State<HomePage> {
     }
   }
 
-  late Future<Weather> _weatherFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _weatherFuture = apiService.getWeather();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF004E92), Color(0xFF000428)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+    return Stack(
+      children: [
+        Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF004E92), Color(0xFF000428)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
           ),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 70),
-        child: Column(
+        Scaffold(
+          extendBodyBehindAppBar: true,
+          backgroundColor: Colors.transparent,
+          body: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(vertical: 70),
+            child: Column(
+              spacing: 10,
+              children: [
+                const Text(
+                  'Lovrić Home Assistant',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                _buildCurrentWeatherCard(),
+
+                _buildForecastList(),
+
+                ControlSection(onToggle: toggleItem),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildForecastList() {
+    return FutureBuilder<List<DailyWeather>>(
+      future: _forecastFuture,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const SizedBox();
+
+        final forecast = snapshot.data!;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Lovrić Home Assistant',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+            const Padding(
+              padding: EdgeInsets.only(left: 10, bottom: 8),
+              child: Text(
+                'Prognoza za 5 dana',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-            SizedBox(height: 20),
-            FutureBuilder<Object>(
-              future: _weatherFuture,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) return const SizedBox();
-                final weather = snapshot.data as Weather;
-
-                return Card(
-                  color: Colors.white.withOpacity(0.1),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  elevation: 4,
-                  margin: const EdgeInsets.only(bottom: 20),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Stack(
+            SizedBox(
+              height: 140,
+              child: ListView.separated(
+                separatorBuilder: (context, index) => SizedBox(width: 10),
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                scrollDirection: Axis.horizontal,
+                itemCount: forecast.length,
+                itemBuilder: (context, index) {
+                  final day = forecast[index];
+                  return Container(
+                    width: 120,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        Column(
-                          children: [
-                            Text(
-                              weather.areaName ?? '',
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.thermostat,
-                                  color: Colors.amberAccent,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  '${weather.temperature?.celsius?.toStringAsFixed(1) ?? '-'} °C',
-                                  style: const TextStyle(
-                                    fontSize: 32,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Text(
-                              weather.weatherDescription ?? '',
-                              style: const TextStyle(color: Colors.white70),
-                            ),
-                            const SizedBox(height: 10),
-                            Wrap(
-                              alignment: WrapAlignment.center,
-                              spacing: 16,
-                              children: [
-                                if (weather.tempFeelsLike?.celsius != null)
-                                  _weatherDetail(
-                                    'Osjećaj',
-                                    '${weather.tempFeelsLike!.celsius!.toStringAsFixed(1)} °C',
-                                  ),
-                                if (weather.humidity != null)
-                                  _weatherDetail(
-                                    'Vlaga',
-                                    '${weather.humidity}%',
-                                  ),
-                                if (weather.windSpeed != null)
-                                  _weatherDetail(
-                                    'Vjetar',
-                                    '${weather.windSpeed} m/s',
-                                  ),
-                                if ((weather.rainLastHour ?? 0) > 0)
-                                  _weatherDetail(
-                                    'Kiša (1h)',
-                                    '${weather.rainLastHour!.toStringAsFixed(1)} mm',
-                                  ),
-                                if ((weather.rainLast3Hours ?? 0) > 0)
-                                  _weatherDetail(
-                                    'Kiša (3h)',
-                                    '${weather.rainLast3Hours!.toStringAsFixed(1)} mm',
-                                  ),
-                                if ((weather.snowLastHour ?? 0) > 0)
-                                  _weatherDetail(
-                                    'Snijeg',
-                                    '${weather.snowLastHour!.toStringAsFixed(1)} mm',
-                                  ),
-                                if (weather.sunrise != null &&
-                                    weather.sunset != null)
-                                  _weatherDetail(
-                                    'Sunce',
-                                    '↑ ${_formatTime(weather.sunrise!)} ↓ ${_formatTime(weather.sunset!)}',
-                                  ),
-                              ],
-                            ),
-                          ],
+                        Text(
+                          _formatShortDate(day.date),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        Align(
-                          alignment: Alignment.topRight,
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _weatherFuture = apiService.getWeather();
-                              });
-                            },
-                            child: Icon(Icons.refresh, color: Colors.white),
+                        Text(
+                          day.description,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '🌞 ${day.tempDay.toStringAsFixed(1)}°',
+                          style: const TextStyle(
+                            color: Colors.amberAccent,
+                            fontSize: 14,
+                          ),
+                        ),
+                        Text(
+                          '🌙 ${day.tempNight.toStringAsFixed(1)}°',
+                          style: TextStyle(
+                            color: Colors.blue[200],
+                            fontSize: 14,
+                          ),
+                        ),
+                        if (day.rain > 0)
+                          Text(
+                            '🌧 ${day.rain.toStringAsFixed(1)} mm',
+                            style: const TextStyle(
+                              color: Colors.lightBlueAccent,
+                              fontSize: 12,
+                            ),
+                          ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  String _formatShortDate(DateTime dt) {
+    final weekdays = ['Ned', 'Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub'];
+    return '${weekdays[dt.weekday % 7]} ${dt.day}.${dt.month}.';
+  }
+
+  Widget _buildCurrentWeatherCard() {
+    return FutureBuilder<Weather>(
+      future: _weatherFuture,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const SizedBox();
+        final weather = snapshot.data!;
+
+        return Card(
+          color: Colors.white.withOpacity(0.1),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          elevation: 4,
+          margin: EdgeInsets.all(10),
+          child: Padding(
+            padding: const EdgeInsets.all(15),
+
+            child: Stack(
+              children: [
+                Column(
+                  children: [
+                    Text(
+                      weather.areaName ?? '',
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.thermostat, color: Colors.amberAccent),
+                        const SizedBox(width: 6),
+                        Text(
+                          '${weather.temperature?.celsius?.toStringAsFixed(1) ?? '-'} °C',
+                          style: const TextStyle(
+                            fontSize: 32,
+                            color: Colors.white,
                           ),
                         ),
                       ],
                     ),
+                    Text(
+                      weather.weatherDescription ?? '',
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 16,
+                      children: [
+                        if (weather.tempFeelsLike?.celsius != null)
+                          _weatherDetail(
+                            'Osjećaj',
+                            '${weather.tempFeelsLike!.celsius!.toStringAsFixed(1)} °C',
+                          ),
+                        if (weather.humidity != null)
+                          _weatherDetail('Vlaga', '${weather.humidity}%'),
+                        if (weather.windSpeed != null)
+                          _weatherDetail('Vjetar', '${weather.windSpeed} m/s'),
+                        if ((weather.rainLastHour ?? 0) > 0)
+                          _weatherDetail(
+                            'Kiša (1h)',
+                            '${weather.rainLastHour!.toStringAsFixed(1)} mm',
+                          ),
+                        if ((weather.rainLast3Hours ?? 0) > 0)
+                          _weatherDetail(
+                            'Kiša (3h)',
+                            '${weather.rainLast3Hours!.toStringAsFixed(1)} mm',
+                          ),
+                        if ((weather.snowLastHour ?? 0) > 0)
+                          _weatherDetail(
+                            'Snijeg',
+                            '${weather.snowLastHour!.toStringAsFixed(1)} mm',
+                          ),
+                        if (weather.sunrise != null && weather.sunset != null)
+                          _weatherDetail(
+                            'Sunce',
+                            '↑ ${_formatTime(weather.sunrise!)} ↓ ${_formatTime(weather.sunset!)}',
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+                Align(
+                  alignment: Alignment.topRight,
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _loadData();
+                      });
+                    },
+                    child: const Icon(Icons.refresh, color: Colors.white),
                   ),
-                );
-              },
+                ),
+              ],
             ),
-
-            const SizedBox(height: 10),
-            ControlSection(onToggle: toggleItem),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 

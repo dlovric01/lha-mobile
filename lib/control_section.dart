@@ -10,35 +10,48 @@ class ControlSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: _ControlButton(
-                label: 'Lijeva garaža',
-                icon: Icons.garage,
-                onTap: () => onToggle(LHAEnum.garageLeft),
+    return Padding(
+      padding: const EdgeInsets.all(5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(left: 5, bottom: 8),
+            child: Text(
+              'Kontrole',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _ControlButton(
-                label: 'Desna garaža',
-                icon: Icons.garage,
-                onTap: () => onToggle(LHAEnum.garageRight),
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: _ControlButton(
+                  label: 'Lijeva garaža',
+                  icon: Icons.garage,
+                  onTap: () => onToggle(LHAEnum.garageLeft),
+                ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        _ControlButton(
-          label: 'Kapija',
-          icon: Icons.table_rows,
-          fullWidth: true,
-          onTap: () => onToggle(LHAEnum.slidingGate),
-        ),
-      ],
+              Expanded(
+                child: _ControlButton(
+                  label: 'Desna garaža',
+                  icon: Icons.garage,
+                  onTap: () => onToggle(LHAEnum.garageRight),
+                ),
+              ),
+            ],
+          ),
+          _ControlButton(
+            label: 'Kapija',
+            icon: Icons.table_rows,
+            fullWidth: true,
+            onTap: () => onToggle(LHAEnum.slidingGate),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -60,10 +73,9 @@ class _ControlButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final card = Card(
       elevation: 2,
-      color:Colors.white.withOpacity(0.1), // Tamna s nijansom plave
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      margin: EdgeInsets.all(5),
+      color: Colors.white.withOpacity(0.1), // Tamna s nijansom plave
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -88,8 +100,6 @@ class _ControlButton extends StatelessWidget {
       ),
     );
 
-    return fullWidth
-        ? SizedBox(width: double.infinity, child: card)
-        : card;
+    return fullWidth ? SizedBox(width: double.infinity, child: card) : card;
   }
 }
