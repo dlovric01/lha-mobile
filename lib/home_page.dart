@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:lha_mobile/api_service.dart';
+import 'package:lha_mobile/control_section.dart';
 import 'package:weather/weather.dart';
 
 enum LHAEnum {
@@ -187,15 +188,7 @@ class HomePageState extends State<HomePage> {
             ),
 
             const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(child: _buildItem(LHAEnum.garageLeft)),
-                const SizedBox(width: 10),
-                Expanded(child: _buildItem(LHAEnum.garageRight)),
-              ],
-            ),
-            const SizedBox(height: 10),
-            _buildItem(LHAEnum.slidingGate),
+            ControlSection(onToggle: toggleItem),
           ],
         ),
       ),
@@ -224,30 +217,6 @@ class HomePageState extends State<HomePage> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildItem(LHAEnum item) {
-    return GestureDetector(
-      onTap: () => toggleItem(item),
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        color: Colors.tealAccent.shade400.withOpacity(0.2),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Center(
-            child: Text(
-              item.description,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.yellowAccent,
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 
