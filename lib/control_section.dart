@@ -1,7 +1,6 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'home_page.dart' show LHAEnum;
 
 class ControlSection extends StatelessWidget {

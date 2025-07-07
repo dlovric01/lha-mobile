@@ -37,8 +37,6 @@ dependencies:
   http: ^1.4.0
   flutter_dotenv: ^5.2.1
   dio: ^5.8.0+1
-  weather: ^3.2.1
-  skeletonizer: ^1.4.3
   flutter_animate: ^4.5.2
 
 dev_dependencies:
