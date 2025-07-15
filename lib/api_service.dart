@@ -33,13 +33,8 @@ class ApiService {
     await Future.delayed(
       Duration(milliseconds: 500),
     ); // added for button spamming
-
-    throw 'Kapija još nije podržana. Dolazi uskoro 🚧';
+    return await _dio.post('/gate');
   }
-
-
-
-
 
   /// Optional: centralizirani error parser
   String _handleDioError(DioException e) {

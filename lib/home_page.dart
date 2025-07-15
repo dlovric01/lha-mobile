@@ -29,10 +29,6 @@ class HomePageState extends State<HomePage> {
     super.initState();
   }
 
-  void _loadData() {
-    // No weather data to load
-  }
-
   Future<void> toggleItem(LHAEnum item) async {
     try {
       switch (item) {
@@ -78,22 +74,13 @@ class HomePageState extends State<HomePage> {
             padding: EdgeInsets.only(bottom: 100),
             child: Column(
               spacing: 10,
-              children: [
-                ControlSection(onToggle: toggleItem),
-              ],
+              children: [ControlSection(onToggle: toggleItem)],
             ),
           ),
         ),
       ],
     );
   }
-
-
-
-
-
-
-
 
   void showCustomSnackbar(String message, {bool isError = false}) {
     final color = isError ? Colors.redAccent : Colors.greenAccent.shade400;
