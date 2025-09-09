@@ -30,22 +30,18 @@ class ApiService {
   }
 
   Future<Response> toggleSlidingGate() async {
-    await Future.delayed(
-      Duration(milliseconds: 500),
-    ); // added for button spamming
-    return await _dio.post('/gate');
+    try {
+      await Future.delayed(
+        Duration(milliseconds: 500),
+      ); // added for button spamming
+      return await _dio.post('/gate');
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
   }
 
   /// Optional: centralizirani error parser
   String _handleDioError(DioException e) {
-    if (e.response?.statusCode == 401) {
-      return 'Neautorizirano – provjeri JWT token.';
-    } else if (e.type == DioExceptionType.connectionTimeout) {
-      return 'Timeout spajanja na server.';
-    } else if (e.type == DioExceptionType.badResponse) {
-      return 'Greška: ${e.response?.statusCode} ${e.response?.statusMessage}';
-    } else {
-      return 'Nepoznata greška: ${e.message}';
-    }
+    return 'Nesto je poslo po krivu pokusajte kasnije';
   }
 }

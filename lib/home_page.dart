@@ -40,7 +40,7 @@ class HomePageState extends State<HomePage> {
       }
       showCustomSnackbar('${item.description} OK');
     } catch (e) {
-      showCustomSnackbar(e.toString(), isError: true);
+      showCustomSnackbar('Nesto je poslo po krivu pokusajte kasnije', isError: true);
     }
   }
 
